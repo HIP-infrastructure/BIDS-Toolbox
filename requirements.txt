@@ -1,0 +1,16 @@
+#dicom2nifti dep
+#nibabel
+#numpy
+#scipy
+#python-gdcm
+
+#bids stuff
+#pybids >= 0.16.4
+numpy >= 1.26.4
+dicom2nifti >= 2.4.10
+
+# api stuff
+gunicorn
+flask-httpauth
+flask
+flask-cors
