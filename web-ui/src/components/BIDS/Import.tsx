@@ -1,4 +1,3 @@
-import { useMatomo } from '@jonkoops/matomo-tracker-react'
 import { Delete, Info, Save } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -51,7 +50,6 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 		data?: any
 	}>()
 
-	const { trackEvent } = useMatomo()
 	const { showNotif } = useNotification()
 
 	useEffect(() => {
@@ -74,10 +72,10 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 
 
 		const files: BIDSFile[] = filesToImport
-		trackEvent({
-			category: 'bids',
-			action: 'import',
-		})
+		// trackEvent({
+		// 	category: 'bids',
+		// 	action: 'import',
+		// })
 
 		setImportResponse(undefined)
 		setSubmitted(true)
@@ -137,105 +135,7 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 	}
 
 	return (
-		<Box sx={{ mt: 2 }}>
-			{filesToImport.length > 0 && (
-				<Box>
-					<Typography variant='h6'>Files to be imported</Typography>
-					<Box sx={{ mt: 1 }}>
-						<TableContainer component={Paper}>
-							<Table size='small' aria-label='Files to be imported'>
-								<TableHead>
-									<TableRow>
-										<TableCell></TableCell>
-										<TableCell>Subject</TableCell>
-										<TableCell>Modality</TableCell>
-										<TableCell>File</TableCell>
-									</TableRow>
-								</TableHead>
-								<TableBody>
-									{filesToImport?.map(file => (
-										<TableRow key={file.path}>
-											<TableCell padding='checkbox'>
-												{/* <IconButton color='primary' aria-label='edit'>
-												<Edit onClick={() => handleEditFile(file)} />
-											</IconButton> */}
-												{!submitted && (
-													<IconButton
-														onClick={() => handleDeleteFile(file)}
-														color='primary'
-														aria-label='delete'
-													>
-														<Delete />
-													</IconButton>
-												)}
-												{submitted && !importResponse && (
-													<CircularProgress size={16} />
-												)}
-												{importResponse?.data && (
-													<Tooltip
-														title={JSON.stringify(
-															importResponse?.data,
-															null,
-															2
-														)}
-														placement='bottom'
-													>
-														<Info color='success' />
-													</Tooltip>
-												)}
-												{importResponse?.error && (
-													<Tooltip
-														title={importResponse?.error.message}
-														placement='bottom'
-													>
-														<Info color='error' />
-													</Tooltip>
-												)}
-											</TableCell>
-											<TableCell>{file.subject}</TableCell>
-											<TableCell>{file.modality}</TableCell>
-											<TableCell sx={{ overflow: 'auto' }}>
-												{
-													file.path //.split('/').pop()
-												}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableContainer>
-						<Box sx={{ m: 3, textAlign: 'center' }}>
-							<LoadingButton
-								sx={{ width: 320 }}
-								color='primary'
-								type='submit'
-								disabled={filesToImport.length === 0 || submitted}
-								loading={submitted}
-								onClick={handleImportSubject}
-								loadingPosition='start'
-								startIcon={<Save />}
-								variant='contained'
-							>
-								Import Files
-							</LoadingButton>
-							{filesToImport.length > 0 && importResponse && !submitted && (
-								<Button
-									sx={{ flex: '1 1' }}
-									color='primary'
-									type='submit'
-									onClick={() => {
-										setFilesToImport([])
-										setImportResponse(undefined)
-									}}
-									variant='contained'
-								>
-									Clear imported files
-								</Button>
-							)}
-						</Box>
-					</Box>
-				</Box>
-			)}
+		<Box sx={{ mt: 2, display: 'flex', flexDirection: 'row', gap: '32px' }}>
 			<Box sx={{ mt: 2 }}>
 				<Typography variant='h6'>
 					Add new files to be imported / converted
@@ -270,10 +170,10 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 											onChange={event => {
 												setSelectedParticipant(event.target.value)
 											}}
-											// error={touched.subject && errors.subject ? true : false}
-											// helperText={
-											// 	touched.subject && errors.subject ? errors.subject : null
-											// }
+										// error={touched.subject && errors.subject ? true : false}
+										// helperText={
+										// 	touched.subject && errors.subject ? errors.subject : null
+										// }
 										>
 											{dataset?.Participants?.map(p => (
 												<MenuItem
@@ -403,6 +303,102 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 						<Box sx={{ m: 3, textAlign: 'center' }}></Box>
 					</Box>
 					<Box sx={{ m: 3, textAlign: 'center' }}></Box>
+				</Box>
+			</Box>
+			<Box sx={{ mt: 2 }}>
+				<Typography variant='h6'>Files to be imported</Typography>
+				<Box sx={{ mt: 1 }}>
+					<TableContainer component={Paper}>
+						<Table size='small' aria-label='Files to be imported'>
+							<TableHead>
+								<TableRow>
+									<TableCell></TableCell>
+									<TableCell>Subject</TableCell>
+									<TableCell>Modality</TableCell>
+									<TableCell>File</TableCell>
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								{filesToImport?.map(file => (
+									<TableRow key={file.path}>
+										<TableCell padding='checkbox'>
+											{/* <IconButton color='primary' aria-label='edit'>
+												<Edit onClick={() => handleEditFile(file)} />
+											</IconButton> */}
+											{!submitted && (
+												<IconButton
+													onClick={() => handleDeleteFile(file)}
+													color='primary'
+													aria-label='delete'
+												>
+													<Delete />
+												</IconButton>
+											)}
+											{submitted && !importResponse && (
+												<CircularProgress size={16} />
+											)}
+											{importResponse?.data && (
+												<Tooltip
+													title={JSON.stringify(
+														importResponse?.data,
+														null,
+														2
+													)}
+													placement='bottom'
+												>
+													<Info color='success' />
+												</Tooltip>
+											)}
+											{importResponse?.error && (
+												<Tooltip
+													title={importResponse?.error.message}
+													placement='bottom'
+												>
+													<Info color='error' />
+												</Tooltip>
+											)}
+										</TableCell>
+										<TableCell>{file.subject}</TableCell>
+										<TableCell>{file.modality}</TableCell>
+										<TableCell sx={{ overflow: 'auto' }}>
+											{
+												file.path //.split('/').pop()
+											}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
+					<Box sx={{ m: 3, textAlign: 'center' }}>
+						<LoadingButton
+							sx={{ width: 320 }}
+							color='primary'
+							type='submit'
+							disabled={filesToImport.length === 0 || submitted}
+							loading={submitted}
+							onClick={handleImportSubject}
+							loadingPosition='start'
+							startIcon={<Save />}
+							variant='contained'
+						>
+							Import Files
+						</LoadingButton>
+						{filesToImport.length > 0 && importResponse && !submitted && (
+							<Button
+								sx={{ flex: '1 1' }}
+								color='primary'
+								type='submit'
+								onClick={() => {
+									setFilesToImport([])
+									setImportResponse(undefined)
+								}}
+								variant='contained'
+							>
+								Clear imported files
+							</Button>
+						)}
+					</Box>
 				</Box>
 			</Box>
 		</Box>

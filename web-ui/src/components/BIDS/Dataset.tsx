@@ -136,7 +136,7 @@ const Dataset = () => {
 											<FileBrowser
 												path={dataset.Path}
 												selectedFile={setSelectedFile}
-												showSearch={true}
+												showSearch={false}
 											/>
 										)}
 									</Box>

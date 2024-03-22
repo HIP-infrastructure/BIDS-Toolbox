@@ -21,6 +21,7 @@ const DatasetCard = ({ dataset, children }: { dataset: BIDSDataset, children?: J
 		<>
 			<NavLink
 				to={`${dataset?.Name}`}
+				style={{ textDecoration: 'none' }}
 			>
 				<Card elevation={3} component={Paper} sx={{ width: 320 }}>
 					<CardMedia
