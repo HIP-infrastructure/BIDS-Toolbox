@@ -170,10 +170,10 @@ const Participants = ({
 					>
 						Add new Participant
 					</Button>
-					<CreateField
+					{/* <CreateField
 						handleCreateField={handleCreateField}
 						creating={isCreatingField}
-					/>
+					/> */}
 				</Box>
 				<Box
 					sx={{
@@ -188,7 +188,7 @@ const Participants = ({
 							<Table stickyHeader size='small' aria-label='Participants table'>
 								<TableHead>
 									<TableRow>
-										<TableCell></TableCell>
+										{/* <TableCell></TableCell> */}
 										{columns.map(c => (
 											<TableCell key={c.name}>{c.name}</TableCell>
 										))}
@@ -202,7 +202,7 @@ const Participants = ({
 											onClick={() => setSelectedSubject(row.participant_id)}
 											key={row.participant_id}
 										>
-											<TableCell padding='checkbox'>
+											{/* <TableCell padding='checkbox'>
 												<IconButton
 													color='primary'
 													aria-label='edit'
@@ -212,7 +212,7 @@ const Participants = ({
 												>
 													<Edit />
 												</IconButton>
-											</TableCell>
+											</TableCell> */}
 											{Object.keys(row).map(key => (
 												<TableCell key={key}>{`${row[key]}`}</TableCell>
 											))}
@@ -222,7 +222,7 @@ const Participants = ({
 							</Table>
 						</TableContainer>
 					</Box>
-					<Box
+					{/* <Box
 						elevation={2}
 						component={Paper}
 						sx={{
@@ -231,8 +231,8 @@ const Participants = ({
 							flex: '1 1',
 						}}
 					>
-						{/* <ParticipantInfo subject={selectedSubject} dataset={dataset} /> */}
-					</Box>
+						<ParticipantInfo subject={selectedSubject} dataset={dataset} />
+					</Box> */}
 				</Box>
 			</Box>
 		</>

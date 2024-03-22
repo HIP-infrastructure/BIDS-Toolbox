@@ -64,10 +64,10 @@ const DatasetDescription = ({ dataset }: { dataset?: BIDSDataset }) => {
 						<Typography gutterBottom variant='body1'>
 							{(dataset?.DatasetDOI && dataset.DatasetDOI) || 'n/a'}
 						</Typography>
-						<Typography variant='body1'>
+						{/* <Typography variant='body1'>
 							<strong>Files</strong>
-						</Typography>
-						<Box>
+						</Typography> */}
+						{/* <Box>
 							<Link
 								target='_blank'
 								href={`${window.location.protocol}//${
@@ -79,7 +79,7 @@ const DatasetDescription = ({ dataset }: { dataset?: BIDSDataset }) => {
 							>
 								{dataset?.Path?.replace('/GROUP_FOLDER', '')}
 							</Link>
-						</Box>
+						</Box> */}
 					</CardContent>
 					<CardActions></CardActions>
 				</>
