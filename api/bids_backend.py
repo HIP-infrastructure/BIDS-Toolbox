@@ -1,4 +1,5 @@
 import os
+import csv
 import json
 import pathlib
 from pathlib import Path
@@ -8,6 +9,7 @@ from flask import jsonify
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from bidsificator.BidsFolder import BidsFolder
+from bidsificator.BidsUtilityFunctions import BidsUtilityFunctions
 
 __author__ = "Florian SIPP"
 __email__ = "florian.sipp@chuv.ch"
@@ -16,15 +18,8 @@ app = Flask(__name__)
 CORS(app) 
 auth = HTTPBasicAuth()
 
-# get relative path of env files
-ENV_PATH = pathlib.Path(__file__).parent
-
-# get relative path of docker-compose file
-DOCKER_PATH = pathlib.Path(__file__).parent.parent
-
-# load necessary env vars (keycloak connection and else)
-# load_dotenv(ENV_PATH.joinpath("keycloak_backend.env"))
-# load_dotenv(ENV_PATH.joinpath("../.env"))
+#TODO add_files_to_bids_subject(dataset_name): Check with manu how to handle error return if some files are missing but not all 
+#TODO Add name sanitization to handle possible spaces in dataset name
 
 @app.route('/')
 #@auth.login_required
@@ -95,20 +90,20 @@ POST /datasets
 """
 @app.route('/datasets', methods=['POST'])
 def create_bids_dataset():
-  # Retrieve user information from the JSON request
-  content = request.get_json()
-  dataset_path = "/data/" + content.get('dataset_dirname', '')
-  dataset_description = content.get('DatasetDescJSON', '')
+    # Retrieve user information from the JSON request
+    content = request.get_json()
+    dataset_path = "/data/" + content.get('dataset_dirname', '')
+    dataset_description = content.get('DatasetDescJSON', '')
 
-  participant_file_path = str(dataset_path) + "/participants.tsv"
-  dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
+    participant_file_path = str(dataset_path) + "/participants.tsv"
+    dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
 
-  bids_folder = BidsFolder(dataset_path)
-  bids_folder.create_folders()
-  bids_folder.generate_dataset_description_file(dataset_description, dataset_description_file_path)
-  bids_folder.generate_participants_tsv(participant_file_path)
+    bids_folder = BidsFolder(dataset_path)
+    bids_folder.create_folders()
+    bids_folder.generate_dataset_description_file(dataset_description, dataset_description_file_path)
+    bids_folder.generate_participants_tsv(participant_file_path)
 
-  return jsonify(dataset_description), 200
+    return jsonify(dataset_description), 200
 
 """ Create a new BIDS subject within a specified dataset.
 Endpoint: POST /datasets/string:dataset_name/participants
@@ -143,26 +138,26 @@ POST /datasets/my_dataset/participants
 """
 @app.route('/datasets/<string:dataset_name>/participants', methods=['POST'])
 def create_empty_bids_subject(dataset_name):
-  #Get information from request
-  dataset_path = "/data/" + dataset_name + "/"
-  subject_description = request.get_json()
-  #Create useful paths
-  participant_file_path = str(dataset_path) + "/participants.tsv"
-  dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
-  #Create folders
-  bids_folder = BidsFolder(dataset_path)
-  bids_folder.create_folders()
-  bids_folder.generate_empty_dataset_description_file(dataset_name, dataset_description_file_path)
-  #Create subject
-  print(subject_description)
-  subject_id = subject_description["participant_id"]
-  bids_subject = bids_folder.add_bids_subject(subject_id)
-  #Generate participants.tsv
-  bids_folder.generate_participants_tsv(participant_file_path)
+    #Get information from request
+    dataset_path = "/data/" + dataset_name + "/"
+    subject_description = request.get_json()
+    #Create useful paths
+    participant_file_path = str(dataset_path) + "/participants.tsv"
+    dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
+    #Create folders
+    bids_folder = BidsFolder(dataset_path)
+    bids_folder.create_folders()
+    bids_folder.generate_empty_dataset_description_file(dataset_name, dataset_description_file_path)
 
-  return jsonify({ 'data': 'Success' }), 200
+    #Create subject
+    subject_id = subject_description["participant_id"]
+    subject_description.pop("participant_id", None)
+    bids_subject = bids_folder.add_bids_subject(subject_id, subject_description)
+    #Generate participants.tsv
+    bids_folder.generate_participants_tsv(participant_file_path)
 
-# possible TODO : if the bids folder does not exist it will be created at the moment, maybe add a boolean to toggle auto creation or not
+    return jsonify({ 'data': 'Success' }), 200
+
 """ Add files to a BIDS subject within a specified dataset.
 Endpoint: POST /datasets/string:dataset_name/participants/string:subject_id/files
 
@@ -200,33 +195,34 @@ POST /datasets/my_dataset/participants/sub-001/files
     ]
 }
 """
-@app.route('/datasets/<string:dataset_name>/participants/<string:subject_id>/files', methods=['POST'])
-def add_files_to_bids_subject(dataset_name, subject_id):
-  dataset_path = "/data/" + dataset_name + "/"
-  files_description = request.get_json()
+@app.route('/datasets/<string:dataset_name>/files', methods=['POST'])
+def add_files_to_bids_subject(dataset_name):
+    dataset_path = "/data/" + dataset_name + "/"
+    files_description = request.get_json()
 
-  bids_folder = BidsFolder(dataset_path)
-  bids_subject = bids_folder.get_bids_subject(subject_id)
-  if bids_subject is None:
-    return jsonify({ 'error': 'Subject not found' }), 404
-  
-  for file in files_description["files"]:
-    #TODO : important, add a security to check that files exists, otherwise don't do anything
-    file_path = Path(file["path"])
-    
-    if file["modality"] == "ieeg":
-        new_file_path = bids_subject.add_functionnal_file(file_path, file["entities"])
-        bids_subject.generate_events_file(new_file_path, file["entities"])
-        bids_subject.generate_channels_file(new_file_path, file["entities"])
-        bids_subject.generate_task_file(new_file_path, file["entities"])
+    bids_folder = BidsFolder(dataset_path)
+    for file in files_description:
+        bids_subject = bids_folder.get_bids_subject(file["subject"])
+        if bids_subject is None:
+            return jsonify({ 'error': 'Subject not found' }), 404
 
-    elif file["modality"] == "T1w" or file["modality"] == "T2w" or file["modality"] == "T1rho" or file["modality"] == "T2rho" or file["modality"] == "FLAIR":            
-        bids_subject.add_anatomical_file(file_path, file)
+        file_path = Path(file["path"])
+        if file_path.exists():
+            if file["modality"] == "ieeg":
+                new_file_path = bids_subject.add_functionnal_file(file_path, file["entities"])
+                bids_subject.generate_events_file(new_file_path, file["entities"])
+                bids_subject.generate_channels_file(new_file_path, file["entities"])
+                bids_subject.generate_task_file(new_file_path, file["entities"])
 
-    else:
-        print("modality not recognized : ", file["modality"])
+            elif file["modality"] == "T1w" or file["modality"] == "T2w" or file["modality"] == "T1rho" or file["modality"] == "T2rho" or file["modality"] == "FLAIR":            
+                bids_subject.add_anatomical_file(file_path, file)
 
-  return jsonify({ 'data': 'Success' }), 200
+            else:
+                print("modality not recognized : ", file["modality"])
+        else:
+            print("file does not exist : ", file_path)
+
+    return jsonify({ 'data': 'Success' }), 200
 
 """ Retrieve the description and participants of a specified dataset.
 Endpoint: GET /datasets/string:dataset_name
@@ -251,35 +247,19 @@ GET /datasets/my_dataset
 """
 @app.route('/datasets/<string:dataset_name>', methods=['GET'])
 def get_dataset_description_and_participants(dataset_name):
-  dataset_path = "/data/" + dataset_name + "/"
-  participant_file_path = str(dataset_path) + "/participants.tsv"
-  dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
-  
-  #Read description of dataset
-  dataset_description = ""
-  if os.path.exists(dataset_description_file_path):
-    with open(dataset_description_file_path, 'r') as f:
-        dataset_description = json.load(f)
-  
-  #For each subjects found in participant_file_path, add the key value pair "sub-id": value to the list
-  participants = []
-  if os.path.exists(participant_file_path):
-    with open(participant_file_path, 'r') as f:
-        lines = f.readlines()
-        for line in lines[1:]:
-            sub_id = line.split("\t")[0]
-            if sub_id.endswith("\n"):
-              sub_id = sub_id[:-1]
-            participants.append({"sub-id": sub_id})
-  
-    #add participants list to dataset_descriptiopn struct
-    dataset_description["Participants"] = participants
+    dataset_path = "/data/" + dataset_name
+    participant_file_path = str(dataset_path) + "/participants.tsv"
+    dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
 
-    #add dataset_path to dataset_description struct
+    #Read description of dataset and participant list
+    dataset_description = BidsUtilityFunctions.read_json_safely(dataset_description_file_path)  
+    participants = BidsUtilityFunctions.read_tsv_safely(participant_file_path) 
+  
+    #add participants list and dataset_path to returned struct
+    dataset_description["Participants"] = participants
     dataset_description["Path"] = dataset_path
 
-  #Return description + participants
-  return jsonify( dataset_description ), 200
+    return jsonify( dataset_description ), 200
 
 """ Retrieve the files from a specified absolute path.
 Endpoint: GET /files
@@ -303,21 +283,21 @@ GET /files?path=/path/to/directory
 """
 @app.route('/files', methods=['GET'])
 def get_files_from_absolute_path():
-  absolute_path_to_check = request.args.get('path')
-  if os.path.exists(absolute_path_to_check):
-    files = []
-    for file in os.listdir(absolute_path_to_check):
-      file_path = os.path.join(absolute_path_to_check, file)
-      is_directory = os.path.isdir(file_path)
-      files.append({
-        "name": file,
-        "isDirectory": is_directory,
-        "path": file_path,
-        "parentPath": absolute_path_to_check
-      })
-    return jsonify(files), 200
-  else:
-    return jsonify([]), 200
+    absolute_path_to_check = request.args.get('path')
+    if os.path.exists(absolute_path_to_check):
+        files = []
+        for file in os.listdir(absolute_path_to_check):
+            file_path = os.path.join(absolute_path_to_check, file)
+            is_directory = os.path.isdir(file_path)
+            files.append({
+              "name": file,
+              "isDirectory": is_directory,
+              "path": file_path,
+              "parentPath": absolute_path_to_check
+            })
+        return jsonify(files), 200
+    else:
+        return jsonify([]), 200
 
 """ Retrieve the content of a file from a specified absolute path.
 Endpoint: GET /files/content
@@ -340,53 +320,15 @@ GET /files/content?path=/path/to/file.txt
 """
 @app.route('/files/content', methods=['GET'])
 def get_files_content_from_absolute_path():
-  absolute_file_path_to_check = request.args.get('path')
-  is_text_extension = absolute_file_path_to_check.endswith(".csv") or absolute_file_path_to_check.endswith(".tsv") or absolute_file_path_to_check.endswith(".txt") or absolute_file_path_to_check.endswith(".json")
-  if os.path.exists(absolute_file_path_to_check) and is_text_extension:
-    with open(absolute_file_path_to_check, 'r') as f:
-      content = f.read()
-      return jsonify(content), 200
-  else:
-    return jsonify(""), 200
-
-#### Old stuff, decide if we keep that or not later
-
-# TODO : do we keep it or not ? 
-# Create participant with its files 
-@app.route('/datasets/<string:dataset_name>/participants_old', methods=['POST'])
-def import_bids_subject(dataset_name):
-  dataset_path = "/data/" + dataset_name + "/"
-  subject_description = request.get_json()
-
-  participant_file_path = str(dataset_path) + "/participants.tsv"
-  dataset_description_file_path = str(dataset_path) + "/dataset_description.json"
-
-  bids_folder = BidsFolder(dataset_path)
-  bids_folder.create_folders()
-  bids_folder.generate_empty_dataset_description_file("Dataset name", dataset_description_file_path)
-
-  subject_id = "sub-" + subject_description["subjects"][0]["sub"]
-  bids_subject = bids_folder.add_bids_subject(subject_id)
-
-  for file in subject_description["files"]:
-      #TODO : important, add a security to check that files exists, otherwise don't do anything
-      file_path = Path(file["path"])
-      
-      if file["modality"] == "ieeg":
-          new_file_path = bids_subject.add_functionnal_file(file_path, file["entities"])
-          bids_subject.generate_events_file(new_file_path, file["entities"])
-          bids_subject.generate_channels_file(new_file_path, file["entities"])
-          bids_subject.generate_task_file(new_file_path, file["entities"])
-
-      elif file["modality"] == "T1w" or file["modality"] == "T2w" or file["modality"] == "T1rho" or file["modality"] == "T2rho" or file["modality"] == "FLAIR":            
-          bids_subject.add_anatomical_file(file_path, file)
-
-      else:
-          print("modality not recognized : ", file["modality"])
-  
-  bids_folder.generate_participants_tsv(participant_file_path)
-
-  return jsonify({ 'data': 'Success' }), 200
+    absolute_file_path_to_check = request.args.get('path')
+    extensions = [".csv", ".tsv", ".txt", ".json"]
+    is_text_extension = any(absolute_file_path_to_check.endswith(ext) for ext in extensions)
+    if os.path.exists(absolute_file_path_to_check) and is_text_extension:
+        with open(absolute_file_path_to_check, 'r') as f:
+          content = f.read()
+          return jsonify(content), 200
+    else:
+        return jsonify(""), 200
 
 if __name__ == '__main__':
   app.run(debug=True, port=5000)
