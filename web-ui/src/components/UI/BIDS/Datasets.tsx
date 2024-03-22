@@ -24,7 +24,7 @@ import {
 	Typography,
 } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
-import { getAllBidsDataset } from '../../../api/bids'
+import { getAllBidsDataset } from '../../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../../api/types'
 import useDebounce from '../../../hooks/useDebounce'
 import { useAppStore } from '../../../Store'
@@ -54,10 +54,6 @@ const ageRangeMarks = [
 ]
 
 const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?: (dataset: BIDSDataset) => void, buttonTitle?: string}) => {
-	const {
-		user: [user],
-	} = useAppStore()
-
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [term, setTerm] = useState('*')
 	const [debouncedAgeRange, ageRange, setAgeRange] = useDebounce<number[]>([
@@ -108,7 +104,6 @@ const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?
 		// 		setLoading(false)
 		// 	})
 	}, [
-		user,
 		term,
 		debouncedAgeRange,
 		debouncedParticipantsCount,

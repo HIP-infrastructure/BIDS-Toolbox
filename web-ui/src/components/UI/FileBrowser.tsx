@@ -41,10 +41,6 @@ const FileBrowser = ({
 		parentPath: 'root',
 	}
 
-	const {
-		user: [user],
-	} = useAppStore()
-
 	const [files, setFiles] = useState<Node[]>([rootFile])
 	const [groups, setGroups] = useState<string[] | null>(null)
 	const [expanded, setExpanded] = useState([rootFile.path])

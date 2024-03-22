@@ -7,7 +7,7 @@ import { BIDSDataset, Participant } from '../../api/types'
 import { useAppStore } from '../../Store'
 import { MinusSquare, PlusSquare } from './Icons'
 import { useNotification } from '../../hooks/useNotification'
-import { getAllBidsDataset } from '../../api/bids'
+import { getAllBidsDataset } from '../../api/gatewayClientAPI'
 
 interface Node {
 	id: string
@@ -41,15 +41,9 @@ const DatasetSubjectChooser = ({
 	const [selectedNode, setSelectedNode] = useState<Node>()
 	const [expanded, setExpanded] = useState<string[]>([])
 	const [bidsDatasets, setBidsDatasets] = useState<BIDSDataset[]>()
-
 	const { showNotif } = useNotification()
 
-	const {
-		user: [user],
-	} = useAppStore()
-
 	useEffect(() => {
-		if (!user?.uid) return
 
 		getAllBidsDataset()
 			.then(datasets => {
@@ -58,7 +52,7 @@ const DatasetSubjectChooser = ({
 			.catch(e => {
 				showNotif(e.message, 'error')
 			})
-	}, [user])
+	}, [])
 
 	useEffect(() => {
 		if (bidsDatasets) {

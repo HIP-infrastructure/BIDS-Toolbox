@@ -237,13 +237,6 @@ export interface CreateBidsDatasetDto {
 	}
 }
 
-export interface CreateSubjectDto {
-	readonly owner: string
-	readonly dataset_path: string
-	subjects: Participant[]
-	readonly files: BIDSFile[]
-}
-
 export interface EditSubjectClinicalDto {
 	readonly owner: string
 	readonly dataset: string

@@ -21,7 +21,7 @@ import {
 } from '../../../api/types'
 import { useNotification } from '../../../hooks/useNotification'
 import { useAppStore } from '../../../Store'
-import { subEditClinical } from '../../../api/bids'
+// import { subEditClinical } from '../../../api/gatewayClientAPI'
 
 type IField = Record<string, string>
 
@@ -50,10 +50,6 @@ const CreateParticipant = ({
 		'age',
 		'sex',
 	])
-	const {
-		user: [user],
-	} = useAppStore()
-
 	useEffect(() => {
 		if (dataset?.Participants) {
 			const firstLine = JSON.parse(JSON.stringify(dataset.Participants)).pop()
@@ -105,7 +101,7 @@ const CreateParticipant = ({
 						setSubmitted(true)
 
 						if (editMode) {
-							if (!user?.uid || !dataset?.Name || !dataset?.Path) {
+							if (!dataset?.Name || !dataset?.Path) {
 								showNotif('Participant not saved', 'error')
 								return
 							}
@@ -113,25 +109,25 @@ const CreateParticipant = ({
 							const { participant_id, ...other } = values as any
 
 							const subEditClinicalDto: EditSubjectClinicalDto = {
-								owner: user.uid,
+								owner: "",
 								dataset: dataset.Name,
 								path: dataset.Path,
-								subject: participant_id.replace('sub-', ''),
+								subject: participant_id,
 								clinical: { ...other },
 							}
 
-							subEditClinical(subEditClinicalDto)
-								.then(() => {
-									showNotif('Participant saved', 'success')
-									resetForm()
-									setSubmitted(false)
-									handleClose(values)
-								})
-								.catch(() => {
-									showNotif('Participant not saved', 'error')
-									setSubmitted(false)
-									handleClose()
-								})
+							// subEditClinical(subEditClinicalDto)
+							// 	.then(() => {
+							// 		showNotif('Participant saved', 'success')
+							// 		resetForm()
+							// 		setSubmitted(false)
+							// 		handleClose(values)
+							// 	})
+							// 	.catch(() => {
+							// 		showNotif('Participant not saved', 'error')
+							// 		setSubmitted(false)
+							// 		handleClose()
+							// 	})
 						} else {
 
 							const { participant_id, ...other } = values as any

@@ -19,20 +19,18 @@ import {
 	Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { importSubject } from '../../../api/bids'
+import { importSubject } from '../../../api/gatewayClientAPI'
 import {
 	BIDSDataset,
-	CreateSubjectDto,
 	BIDSFile,
 	IEntity,
 	Participant,
 } from '../../../api/types'
 import { ENTITIES, MODALITIES } from '../../../constants'
 import { useNotification } from '../../../hooks/useNotification'
-import { useAppStore } from '../../../Store'
 import FileChooser from '../../UI/FileChooser'
 import EntityOptions from './EntityOptions'
-import ParticipantInfo from './ParticipantInfo'
+// import ParticipantInfo from './ParticipantInfo'
 
 const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 	const [entities, setEntites] = useState<IEntity[]>()
@@ -50,15 +48,11 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 	const [submitted, setSubmitted] = useState(false)
 	const [importResponse, setImportResponse] = useState<{
 		error?: Error
-		data?: CreateSubjectDto
+		data?: any
 	}>()
 
 	const { trackEvent } = useMatomo()
 	const { showNotif } = useNotification()
-
-	const {
-		user: [user],
-	} = useAppStore()
 
 	useEffect(() => {
 		if (!selectedModality) return
@@ -73,27 +67,13 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 	}, [selectedModality])
 
 	const handleImportSubject = async () => {
-		if (!user?.uid && !dataset?.Path) {
+		if (!dataset?.Name) {
 			showNotif('No dataset selected', 'error')
 			return
 		}
 
-		const subjects = selectedParticipants?.map(s => {
-			const { participant_id, ...other } = s
 
-			return {
-				...other,
-				sub: participant_id.replace('sub-', ''),
-			}
-		})
-
-		const createSubjectDto: Partial<CreateSubjectDto> = {
-			owner: user?.uid,
-			dataset_path: dataset?.Path,
-			files: filesToImport,
-			subjects,
-		}
-
+		const files: BIDSFile[] = filesToImport
 		trackEvent({
 			category: 'bids',
 			action: 'import',
@@ -101,7 +81,7 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 
 		setImportResponse(undefined)
 		setSubmitted(true)
-		importSubject(createSubjectDto as CreateSubjectDto)
+		importSubject(dataset!.Name, files)
 			.then(data => {
 				setImportResponse({ data })
 				showNotif('Subject imported', 'success')
@@ -144,10 +124,10 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 
 		const file: BIDSFile = {
 			modality: selectedModality?.name,
-			subject: selectedParticipant.replace('sub-', ''),
+			subject: selectedParticipant,
 			path: selectedFile,
 			entities: {
-				sub: selectedParticipant.replace('sub-', ''),
+				sub: selectedParticipant,
 				...selectedEntities,
 			},
 		}
@@ -409,7 +389,7 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 									</Box>
 								</Box>
 							</Box>
-							<Box sx={{ flex: '1 0' }}>
+							{/* <Box sx={{ flex: '1 0' }}>
 								<Typography sx={{ mt: 1, mb: 2, ml: 2 }} variant='body2'>
 									Subject description
 								</Typography>
@@ -417,7 +397,7 @@ const Import = ({ dataset }: { dataset?: BIDSDataset }): JSX.Element => {
 									dataset={dataset}
 									subject={selectedParticipant}
 								/>
-							</Box>
+							</Box> */}
 						</Paper>
 
 						<Box sx={{ m: 3, textAlign: 'center' }}></Box>

@@ -1,7 +1,4 @@
-import { getCurrentUser } from './nextcloudAuth'
 import React, { useState } from 'react'
-import { refreshBidsDatasetsIndex } from './api/bids'
-import { getUsers } from './api/gatewayClientAPI'
 import {
 	BIDSDataset,
 	BIDSFile,
@@ -13,13 +10,7 @@ import {
 
 export interface IAppState {
 	debug: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
-	tooltips: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
-	user: [
-		UserCredentials | null,
-		React.Dispatch<React.SetStateAction<UserCredentials | null>>
-	]
-	users: [User[] | null, React.Dispatch<React.SetStateAction<User[] | null>>]
-	
+	tooltips: [boolean, React.Dispatch<React.SetStateAction<boolean>>]	
 	selectedBidsDataset: [
 		BIDSDataset | undefined,
 		React.Dispatch<React.SetStateAction<BIDSDataset | undefined>>
@@ -44,42 +35,15 @@ export const AppStoreProvider = ({
 }): JSX.Element => {
 	const [debug, setDebug] = useState(false)
 	const [showTooltip, setShowTooltip] = React.useState(false)
-	
-	const [user, setUser] = useState<UserCredentials | null>(null)
-	const [users, setUsers] = useState<User[] | null>(null)
-
-	// BIDS Tools Store, to be renamed or refactored into a new type
 	const [selectedBidsDataset, setSelectedBidsDataset] = useState<BIDSDataset>()
 	const [selectedParticipants, setSelectedParticipants] =
 		useState<Participant[]>()
 	const [selectedFiles, setSelectedFiles] = useState<BIDSFile[]>()
 
-	// Fetch initial data
-	React.useEffect(() => {
-		const currentUser = getCurrentUser()
-		if (!currentUser) return
-
-		setUser(currentUser)
-		// getUser(currentUser.uid)
-		// 	.then(data => {
-		// 		if (data) {
-		// 			setUser({
-		// 				...currentUser,
-		// 				...data,
-		// 			})
-		// 		}
-		// 	})
-		// 	.catch(error => {
-		// 		console.error(error) // eslint-disable-line no-console
-		// 	})
-	}, [])
-
 	const value: IAppState = React.useMemo(
 		() => ({
 			debug: [debug, setDebug],
 			tooltips: [showTooltip, setShowTooltip],
-			user: [user, setUser],
-			users: [users, setUsers],
 			selectedBidsDataset: [selectedBidsDataset, setSelectedBidsDataset],
 			selectedParticipants: [selectedParticipants, setSelectedParticipants],
 			selectedFiles: [selectedFiles, setSelectedFiles],
@@ -89,10 +53,6 @@ export const AppStoreProvider = ({
 			setDebug,
 			showTooltip,
 			setShowTooltip,
-			users,
-			setUsers,
-			user,
-			setUser,
 			selectedBidsDataset,
 			setSelectedBidsDataset,
 			selectedParticipants,

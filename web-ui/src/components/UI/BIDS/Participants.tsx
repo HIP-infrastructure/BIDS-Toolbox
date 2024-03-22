@@ -14,12 +14,11 @@ import {
 	Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { writeParticipantsTSV, createParticipant } from '../../../api/bids'
+import { createParticipant, getBidsDataset } from '../../../api/gatewayClientAPI'
 import { BIDSDataset, Participant } from '../../../api/types'
-import { useAppStore } from '../../../Store'
 import CreateField from '../../UI/createField'
 import CreateParticipant from './CreateParticipant'
-import ParticipantInfo from './ParticipantInfo'
+// import ParticipantInfo from './ParticipantInfo'
 import { useNotification } from '../../../hooks/useNotification'
 
 const Participants = ({
@@ -40,10 +39,6 @@ const Participants = ({
 		'age',
 		'sex',
 	])
-
-	const {
-		user: [user],
-	} = useAppStore()
 
 	useEffect(() => {
 		if (dataset?.Participants) {
@@ -75,23 +70,23 @@ const Participants = ({
 					[key]: participant[key] ?? 'n/a',
 				}))
 
-				if (dataset.Path) {
-					writeParticipantsTSV(user?.uid, dataset.Path, {
-						Participants: participants,
-					})
-						.then(() => {
-							dataset.Participants = participants
-							setDataset(dataset)
-							setRows(dataset.Participants)
-							showNotif('New field saved. Participants updated', 'success')
-						})
-						.catch(() => {
-							showNotif('New field not saved', 'error')
-						})
-						.finally(() => {
-							setIsCreatingField(false)
-						})
-				}
+				// if (dataset.Path) {
+				// 	writeParticipantsTSV(user?.uid, dataset.Path, {
+				// 		Participants: participants,
+				// 	})
+				// 		.then(() => {
+				// 			dataset.Participants = participants
+				// 			setDataset(dataset)
+				// 			setRows(dataset.Participants)
+				// 			showNotif('New field saved. Participants updated', 'success')
+				// 		})
+				// 		.catch(() => {
+				// 			showNotif('New field not saved', 'error')
+				// 		})
+				// 		.finally(() => {
+				// 			setIsCreatingField(false)
+				// 		})
+				// }
 			}
 		}
 	}
@@ -125,6 +120,9 @@ const Participants = ({
 		// }
 		setParticipantEditId(undefined)
 		setIsCreateDialogOpen(!isCreateDialogOpen)
+		getBidsDataset(dataset?.Name).then((newDataset) => {
+			setDataset(newDataset)
+		})
 	}
 
 	const handleEditParticipant = (id: string) => {
@@ -233,7 +231,7 @@ const Participants = ({
 							flex: '1 1',
 						}}
 					>
-						<ParticipantInfo subject={selectedSubject} dataset={dataset} />
+						{/* <ParticipantInfo subject={selectedSubject} dataset={dataset} /> */}
 					</Box>
 				</Box>
 			</Box>

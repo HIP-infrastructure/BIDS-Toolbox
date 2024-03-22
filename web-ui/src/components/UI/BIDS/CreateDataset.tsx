@@ -4,7 +4,7 @@ import { Grid, TextField } from '@mui/material'
 import { Form, Formik } from 'formik'
 import React, { useState } from 'react'
 import * as Yup from 'yup'
-import { createBidsDataset } from '../../../api/bids'
+import { createBidsDataset } from '../../../api/gatewayClientAPI'
 import { CreateBidsDatasetDto, IError } from '../../../api/types'
 import { useNotification } from '../../../hooks/useNotification'
 import { useAppStore } from '../../../Store'
@@ -49,19 +49,15 @@ function toValidFolderName(input: string): string {
 const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
 	const { showNotif } = useNotification()
 	const [submitted, setSubmitted] = useState(false)
-	const {
-		user: [user],
-	} = useAppStore()
 
 	return (
 		<Formik
 			initialValues={initialValues}
 			validationSchema={validationSchema}
 			onSubmit={async (values, { resetForm }) => {
-				if (user && user.uid) {
 					setSubmitted(true)
 					const createBidsDatasetDto: CreateBidsDatasetDto = {
-						owner: user.uid,
+						owner: "",
 						parent_path: '',
 						dataset_dirname: toValidFolderName(values.Name),
 						DatasetDescJSON: {
@@ -89,7 +85,7 @@ const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
 					setSubmitted(false)
 					showNotif('Dataset created. Wait for reload', 'success')
 					setDatasetCreated(true)
-				}
+				
 			}}
 		>
 			{({ errors, handleChange, handleBlur, touched, values }) => {

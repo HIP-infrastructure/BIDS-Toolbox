@@ -34,10 +34,6 @@ const FileChooser = ({
 	const [loading, setLoading] = useState(false)
 	const { showNotif } = useNotification()
 
-	const {
-		user: [user],
-	} = useAppStore()
-
 	useEffect(() => {
 		handleSelectedFile && handleSelectedFile(selectedFile.path)
 

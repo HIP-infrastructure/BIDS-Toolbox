@@ -23,7 +23,7 @@ import DatasetDescription from './DatasetDescription'
 import DatasetInfo from './DatasetInfo'
 import Import from './Import'
 import Participants from './Participants'
-import { getBidsDataset } from '../../../api/bids'
+import { getBidsDataset } from '../../../api/gatewayClientAPI'
 import { useNotification } from '../../../hooks/useNotification'
 
 const Dataset = () => {
@@ -36,10 +36,6 @@ const Dataset = () => {
 	const navigate = useNavigate()
 	const { showNotif } = useNotification()
 
-	const {
-		user: [user],
-	} = useAppStore()
-
 	useEffect(() => {
 		const datasetId = params.datasetId
 		if (!datasetId) return
@@ -50,48 +46,9 @@ const Dataset = () => {
 
 	}, [])
 
-	// useEffect(() => {
-	// 	if (!user?.uid) return
-
-	// 	// getAllBidsDataset()
-	// 	// 	.then(datasets => {
-	// 	// 		if (datasets) setBidsDatasets(datasets)
-	// 	// 	})
-	// 	// 	.catch(e => {
-	// 	// 		showNotif(e.message, 'error')
-	// 	// 	})
-	// }, [user])
-
-	// useEffect(() => {
-	// 	if (dataset) return
-
-	// 	const ds = bidsDatasets?.find(dataset => dataset.id === params.datasetId)
-	// 	setDataset(ds)
-	// }, [dataset, bidsDatasets, params])
-
 	useEffect(() => {
 		if (!selectedFile) return
-		if (/\.png|\.jpg|\.eeg|\.gz|\.zip|\.xdf/.test(selectedFile)) {
-			setFileContent(
-				<Box>
-					<Typography>No visualization available yet</Typography>
-					<Link
-						target='_blank'
-						href={`${window.location.protocol}//${
-							window.location.host
-						}/apps/files/?dir=${selectedFile
-							.split('/')
-							.slice(0, -1)
-							.join('/')}`}
-					>
-						View file in NextCloud
-					</Link>
-				</Box>
-			)
-
-			return
-		}
-
+		
 		getFileContent(selectedFile)
 			.then(data => {
 				if (selectedFile.endsWith('.md')) {
@@ -127,7 +84,7 @@ const Dataset = () => {
 
 	return (
 		<>
-			<TitleBar title='BIDS Dataset' />
+			<TitleBar title={'BIDS Dataset' }/>
 
 			<Box sx={{ mt: 2 }}>
 				<Box>
