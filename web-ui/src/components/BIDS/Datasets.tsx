@@ -24,11 +24,11 @@ import {
 	Typography,
 } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
-import { getAllBidsDataset } from '../../../api/gatewayClientAPI'
-import { BIDSDataset } from '../../../api/types'
-import useDebounce from '../../../hooks/useDebounce'
-import { useAppStore } from '../../../Store'
-import TitleBar from '../../UI/titleBar'
+import { getAllBidsDataset } from '../../api/gatewayClientAPI'
+import { BIDSDataset } from '../../api/types'
+import useDebounce from '../../hooks/useDebounce'
+import { useAppStore } from '../../Store'
+import TitleBar from '../UI/titleBar'
 import CreateDataset from './CreateDataset'
 import DatasetCard from './DatasetCard'
 

@@ -5,7 +5,6 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { getFiles2, search } from '../../api/gatewayClientAPI'
 import { ISearch, Node } from '../../api/types'
-import { useAppStore } from '../../Store'
 import { MinusSquare, PlusSquare } from './Icons'
 
 const StyledTreeItem = styled((props: TreeItemProps) => (
@@ -42,7 +41,7 @@ const FileBrowser = ({
 	}
 
 	const [files, setFiles] = useState<Node[]>([rootFile])
-	const [groups, setGroups] = useState<string[] | null>(null)
+	// const [groups, setGroups] = useState<string[] | null>(null)
 	const [expanded, setExpanded] = useState([rootFile.path])
 	const [term, setTerm] = useState('')
 	const [filesCache, setFilesCache] = useState<Node[]>([])
@@ -55,19 +54,19 @@ const FileBrowser = ({
 		})
 	}, [path])
 
-	useEffect(() => {
-		setFiles(files =>
-			sortFile([
-				...files,
-				...(groups?.map(name => ({
-					name,
-					isDirectory: true,
-					path: `/GROUP_FOLDER/${name}`,
-					parentPath: '/',
-				})) || []),
-			])
-		)
-	}, [groups])
+	// useEffect(() => {
+	// 	setFiles(files =>
+	// 		sortFile([
+	// 			...files,
+	// 			...(groups?.map(name => ({
+	// 				name,
+	// 				isDirectory: true,
+	// 				path: `/GROUP_FOLDER/${name}`,
+	// 				parentPath: '/',
+	// 			})) || []),
+	// 		])
+	// 	)
+	// }, [groups])
 
 	useEffect(() => {
 		if (term.length > 1) {

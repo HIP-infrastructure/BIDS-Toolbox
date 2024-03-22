@@ -3,9 +3,9 @@ import { Box, Typography } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Outlet, Route, Routes } from 'react-router-dom'
 import './App.css'
-import Dataset from './components/UI/BIDS/Dataset'
+import Dataset from './components/BIDS/Dataset'
 import { useNotification } from './hooks/useNotification'
-import CenterDatasets from './components/UI/BIDS/Datasets'
+import CenterDatasets from './components/BIDS/Datasets'
 
 export interface Space {
 	label: string

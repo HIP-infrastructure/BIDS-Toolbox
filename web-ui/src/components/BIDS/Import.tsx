@@ -19,16 +19,16 @@ import {
 	Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { importSubject } from '../../../api/gatewayClientAPI'
+import { importSubject } from '../../api/gatewayClientAPI'
 import {
 	BIDSDataset,
 	BIDSFile,
 	IEntity,
 	Participant,
-} from '../../../api/types'
-import { ENTITIES, MODALITIES } from '../../../constants'
-import { useNotification } from '../../../hooks/useNotification'
-import FileChooser from '../../UI/FileChooser'
+} from '../../api/types'
+import { ENTITIES, MODALITIES } from '../../constants'
+import { useNotification } from '../../hooks/useNotification'
+import FileChooser from '../UI/FileChooser'
 import EntityOptions from './EntityOptions'
 // import ParticipantInfo from './ParticipantInfo'
 

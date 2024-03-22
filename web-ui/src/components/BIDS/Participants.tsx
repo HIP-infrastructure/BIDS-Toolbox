@@ -14,12 +14,12 @@ import {
 	Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { createParticipant, getBidsDataset } from '../../../api/gatewayClientAPI'
-import { BIDSDataset, Participant } from '../../../api/types'
-import CreateField from '../../UI/createField'
+import { createParticipant, getBidsDataset } from '../../api/gatewayClientAPI'
+import { BIDSDataset, Participant } from '../../api/types'
+import CreateField from '../UI/createField'
 import CreateParticipant from './CreateParticipant'
 // import ParticipantInfo from './ParticipantInfo'
-import { useNotification } from '../../../hooks/useNotification'
+import { useNotification } from '../../hooks/useNotification'
 
 const Participants = ({
 	dataset,

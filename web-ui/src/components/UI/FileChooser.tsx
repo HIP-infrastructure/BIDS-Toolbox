@@ -10,7 +10,6 @@ import React, { useEffect, useState } from 'react'
 import { getFiles2 } from '../../api/gatewayClientAPI'
 import { Node } from '../../api/types'
 import { useNotification } from '../../hooks/useNotification'
-import { useAppStore } from '../../Store'
 
 const root: Node = {
 	name: '/',
@@ -28,7 +27,7 @@ const FileChooser = ({
 	handleSelectedFile?: (path: string) => void
 }): JSX.Element => {
 	const [files, setFiles] = useState<Node[]>([root])
-	const [groups, setGroups] = useState<string[] | null>(null)
+	// const [groups, setGroups] = useState<string[] | null>(null)
 	const [fileListVisible, setFileListVisible] = useState(false)
 	const [selectedFile, setSelectedFile] = useState<Node>(root)
 	const [loading, setLoading] = useState(false)
@@ -57,22 +56,22 @@ const FileChooser = ({
 		}
 	}, [selectedFile.path, setFiles])
 
-	useEffect(() => {
-		const hasGroup = groups && files.some(f => groups.includes(f.name))
-		if (hasGroup) return
+	// useEffect(() => {
+	// 	const hasGroup = groups && files.some(f => groups.includes(f.name))
+	// 	if (hasGroup) return
 
-		setFiles(files =>
-			sortFile([
-				...files,
-				...(groups?.map(name => ({
-					name,
-					isDirectory: true,
-					path: `/GROUP_FOLDER/${name}`,
-					parentPath: '/',
-				})) || []),
-			])
-		)
-	}, [groups, files, setFiles])
+	// 	setFiles(files =>
+	// 		sortFile([
+	// 			...files,
+	// 			...(groups?.map(name => ({
+	// 				name,
+	// 				isDirectory: true,
+	// 				path: `/GROUP_FOLDER/${name}`,
+	// 				parentPath: '/',
+	// 			})) || []),
+	// 		])
+	// 	)
+	// }, [groups, files, setFiles])
 
 	const parent = files?.find(f => f.path === selectedFile.parentPath)
 	const currentFolder: Node[] = [
