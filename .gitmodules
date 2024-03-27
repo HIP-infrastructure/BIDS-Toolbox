@@ -1,0 +1,3 @@
+[submodule "Bidsificator"]
+	path = Bidsificator
+	url = git@github.com:HIP-infrastructure/Bidsificator.git
