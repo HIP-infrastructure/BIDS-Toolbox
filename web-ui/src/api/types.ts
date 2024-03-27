@@ -221,8 +221,6 @@ export interface IError {
 }
 
 export interface CreateBidsDatasetDto {
-	readonly owner: string
-	readonly parent_path: string // relative path for user or group eg: data/file.md
 	readonly dataset_dirname: string
 	readonly DatasetDescJSON: {
 		readonly Name: string

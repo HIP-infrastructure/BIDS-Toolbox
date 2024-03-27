@@ -8,6 +8,7 @@ import {
 	DialogContent,
 	DialogTitle,
 	IconButton,
+	Link,
 	Typography,
 } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -120,6 +121,7 @@ const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?
 						))}
 					</Box>
 				</Box>
+				<Link onClick={() => window.open('http://127.0.0.1:5000/apidocs')}>Swagger API</Link>
 			</Box>
 		</>
 	)

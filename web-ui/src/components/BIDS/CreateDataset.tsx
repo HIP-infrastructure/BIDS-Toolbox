@@ -57,8 +57,6 @@ const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
 			onSubmit={async (values, { resetForm }) => {
 					setSubmitted(true)
 					const createBidsDatasetDto: CreateBidsDatasetDto = {
-						owner: "",
-						parent_path: '',
 						dataset_dirname: toValidFolderName(values.Name),
 						DatasetDescJSON: {
 							Name: values.Name,

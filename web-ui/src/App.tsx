@@ -4,7 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { Outlet, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Dataset from './components/BIDS/Dataset'
-import CenterDatasets from './components/BIDS/Datasets'
+import Datasets from './components/BIDS/Datasets'
 
 export interface Space {
 	label: string
@@ -25,7 +25,7 @@ const Layout = (): JSX.Element => {
 const App = () => (
 	<Routes>
 		<Route path={'/'} element={<Layout />}>
-			<Route index element={<CenterDatasets />} />
+			<Route index element={<Datasets />} />
 			<Route path={':datasetId'} element={<Dataset />} />
 			<Route
 				path='*'
