@@ -13,9 +13,7 @@
 		}
 	},
 "remoteUser": "root",
-"mounts": [
-	"source=/Users/florian/Documents/Arbeit/CHUV/Data/bidstoolbox/test_data,target=/data,type=bind,consistency=cached"
-  ],
+"mounts": ["source=./data,target=/data,type=bind,consistency=cached","source=./test_data,target=/test_data,type=bind,consistency=cached"],
 "customizations": {
 	"vscode": {
 		"extensions": [
