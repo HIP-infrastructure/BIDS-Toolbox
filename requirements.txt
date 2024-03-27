@@ -1,16 +1,16 @@
-#dicom2nifti dep
-#nibabel
-#numpy
-#scipy
-#python-gdcm
+#UI dependencies
+pyqt6 == 6.4.2
+pyqt6-tools == 6.4.2.3.3
 
-#bids stuff
-#pybids >= 0.16.4
+#Bids dependencies
 numpy >= 1.26.4
 dicom2nifti >= 2.4.10
 
-# api stuff
+#Api dependencies
 gunicorn
 flask-httpauth
 flask
 flask-cors
+flask-restful 
+flasgger
+dedent
