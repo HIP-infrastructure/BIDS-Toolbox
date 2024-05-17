@@ -45,7 +45,7 @@ const CreateField = ({ handleCreateField, creating }: ICreateField) => {
 			{show && (
 				<Box sx={{ mt: 2 }}>
 					<TextField
-						label='New key'
+						label='New column name'
 						id='new-key'
 						size='small'
 						onChange={event =>

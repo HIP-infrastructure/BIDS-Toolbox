@@ -1,5 +1,4 @@
-import * as React from 'react'
-import { Add, Edit } from '@mui/icons-material'
+import { Add, Delete, Edit } from '@mui/icons-material'
 import {
 	Box,
 	Button,
@@ -13,13 +12,14 @@ import {
 	TableRow,
 	Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { createParticipant, getBidsDataset } from '../../api/gatewayClientAPI'
+import * as React from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createNewParticipantColumn, createParticipant, deleteParticipant, deleteParticipantColumn, editParticipant, getBidsDataset } from '../../api/gatewayClientAPI'
 import { BIDSDataset, Participant } from '../../api/types'
+import { useNotification } from '../../hooks/useNotification'
+import Modal, { ModalComponentHandle } from '../UI/Modal'
 import CreateField from '../UI/createField'
 import CreateParticipant from './CreateParticipant'
-// import ParticipantInfo from './ParticipantInfo'
-import { useNotification } from '../../hooks/useNotification'
 
 const Participants = ({
 	dataset,
@@ -29,105 +29,113 @@ const Participants = ({
 	setDataset: React.Dispatch<React.SetStateAction<BIDSDataset | undefined>>
 }): JSX.Element => {
 	const { showNotif } = useNotification()
+	const modalRef = useRef<ModalComponentHandle>(null)
 	const [rows, setRows] = useState<Participant[]>([])
-	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+	const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false)
 	const [participantEditId, setParticipantEditId] = useState<string>()
-	const [selectedSubject, setSelectedSubject] = useState<string>()
-	const [isCreatingField, setIsCreatingField] = useState(false)
-	const [fields, setFields] = useState<string[]>([
-		'participant_id',
-		'age',
-		'sex',
-	])
-
-	useEffect(() => {
-		if (dataset?.Participants) {
-			const firstLine = JSON.parse(JSON.stringify(dataset.Participants)).pop()
-			if (firstLine) {
-				const participantFields = Object.keys(firstLine)
-				setFields(participantFields)
-			}
-		}
-	}, [dataset?.Participants])
+	const [isCreatingField, setIsCreatingColumn] = useState(false)
 
 	useEffect(() => {
 		if (dataset?.Participants) setRows(dataset.Participants)
 	}, [dataset?.Participants, setRows])
 
 	useEffect(() => {
-		if (participantEditId) setIsCreateDialogOpen(true)
+		if (participantEditId) setIsParticipantDialogOpen(true)
 	}, [participantEditId])
 
-	const handleCreateField = ({ key }: { key: string }) => {
-		if (key) {
-			setIsCreatingField(true)
-			const keys = [...fields, key]
-			setFields(keys)
+	const getDataset = async () => {
+		if (!dataset?.Name) { setIsParticipantDialogOpen(false); return }
 
-			if (dataset?.Participants) {
-				const participants = dataset.Participants.map(participant => ({
-					...participant,
-					[key]: participant[key] ?? 'n/a',
-				}))
+		return getBidsDataset(dataset?.Name).then((nextDataset) => {
+			setDataset(nextDataset)
+		}).catch((e) => {
+			showNotif('Could not get participants', 'error')
+		})
+	}
 
-				// if (dataset.Path) {
-				// 	writeParticipantsTSV(user?.uid, dataset.Path, {
-				// 		Participants: participants,
-				// 	})
-				// 		.then(() => {
-				// 			dataset.Participants = participants
-				// 			setDataset(dataset)
-				// 			setRows(dataset.Participants)
-				// 			showNotif('New field saved. Participants updated', 'success')
-				// 		})
-				// 		.catch(() => {
-				// 			showNotif('New field not saved', 'error')
-				// 		})
-				// 		.finally(() => {
-				// 			setIsCreatingField(false)
-				// 		})
-				// }
-			}
+	const handleCreateColumn = ({ key: column }: { key: string }) => {
+		if (column) {
+			setIsCreatingColumn(true)
+			createNewParticipantColumn(dataset?.Name || '', column).then(() => {
+				getDataset().then(() => {
+					setIsCreatingColumn(false)
+				})
+			}).catch((e) => {
+				showNotif('Could not create field', 'error')
+				setIsCreatingColumn(false)
+			})
 		}
 	}
 
-	const handleCloseCreateParticipant = (
+	const handleDeleteColumn = async (column: string): Promise<void> => {
+		if (!modalRef.current) return
+
+		const reply = await modalRef.current.open(
+			'Delete column ?',
+			'Are you sure you want to delete this column? This action is irreversible and will delete all participants data in this column.'
+		)
+
+		if (reply) {
+			deleteParticipantColumn(dataset?.Name || '', column).then(() => {
+				showNotif('Column deleted', 'success')
+				getDataset()
+			}).catch((e) => {
+				showNotif('Could not delete column', 'error')
+			})
+		}
+	}
+
+	const handleCreateParticipant = (
 		participant: Participant | undefined
 	) => {
 
-		if (!participant) return
-		if (!dataset?.Name) return
+		if (!participant || !dataset?.Name) {
+			setIsParticipantDialogOpen(false)
+				; return
+		}
 
-		createParticipant(dataset?.Name, participant)
+		if (participantEditId) {
+			editParticipant(dataset?.Name, participant).then(() => {
+				getDataset().then(() => {
+					showNotif('Participant saved', 'success')
+					setIsParticipantDialogOpen(false)
+				})
+			}).catch((e) => { showNotif('Could not edit participant', 'error') })
+		} else {
+			createParticipant(dataset?.Name, participant).then(() => {
+				getDataset().then(() => {
+					showNotif('Participant edited', 'success')
+					setIsParticipantDialogOpen(false)
+				})
+			}).catch((e) => { setIsParticipantDialogOpen(false); showNotif('Could not create participant', 'error') })
+		}
 
-		// if (dataset && participant) {
-		// 	const exists =
-		// 		dataset?.Participants?.map(p => p.participant_id).includes(
-		// 			participant.participant_id
-		// 		) || false
-
-		// 	const participants = exists
-		// 		? dataset.Participants?.map(p =>
-		// 				participant.participant_id === p.participant_id ? participant : p
-		// 		  ) // eslint-disable-line no-mixed-spaces-and-tabs
-		// 		: [...(dataset.Participants || []), participant]
-
-		// 	if (participants)
-		// 		setDataset({
-		// 			...dataset,
-		// 			Participants: participants,
-		// 		})
-		// }
 		setParticipantEditId(undefined)
-		setIsCreateDialogOpen(!isCreateDialogOpen)
-		getBidsDataset(dataset?.Name).then((newDataset) => {
-			setDataset(newDataset)
-		})
+	}
+
+	const handleDeleteParticipant = async (participant_id: string): Promise<void> => {
+		if (!dataset?.Name) { return }
+		if (!modalRef.current) return
+
+		const reply = await modalRef.current.open(
+			'Delete participant ?',
+			'Are you sure you want to delete this participant?'
+		)
+
+		if (reply) {
+			deleteParticipant(dataset.Name, participant_id).then(() => {
+				getDataset().then(() => {
+					showNotif('Participant deleted', 'success')
+				})
+			}).catch((e) => {
+				showNotif('Could not delete participant', 'error')
+			})
+		}
 	}
 
 	const handleEditParticipant = (id: string) => {
 		setParticipantEditId(id)
-		setIsCreateDialogOpen(true)
+		setIsParticipantDialogOpen(true)
 	}
 
 	const columns = [
@@ -142,11 +150,12 @@ const Participants = ({
 
 	return (
 		<>
+			<Modal ref={modalRef} />
 			<CreateParticipant
 				dataset={dataset}
 				participantEditId={participantEditId}
-				open={isCreateDialogOpen}
-				handleClose={handleCloseCreateParticipant}
+				open={isParticipantDialogOpen}
+				handleCreateParticipant={handleCreateParticipant}
 			/>
 			<Box sx={{ mt: 2 }}>
 				<Box
@@ -160,20 +169,17 @@ const Participants = ({
 					<Button
 						color='primary'
 						size='small'
-						sx={{ m: 2 }}
+						sx={{ m: 1 }}
 						startIcon={<Add />}
 						onClick={() => {
 							setParticipantEditId(undefined)
-							setIsCreateDialogOpen(true)
+							setIsParticipantDialogOpen(true)
 						}}
 						variant='contained'
 					>
 						Add new Participant
 					</Button>
-					{/* <CreateField
-						handleCreateField={handleCreateField}
-						creating={isCreatingField}
-					/> */}
+
 				</Box>
 				<Box
 					sx={{
@@ -188,10 +194,29 @@ const Participants = ({
 							<Table stickyHeader size='small' aria-label='Participants table'>
 								<TableHead>
 									<TableRow>
-										{/* <TableCell></TableCell> */}
+										<TableCell padding='checkbox'></TableCell>
+										<TableCell padding='checkbox'></TableCell>
 										{columns.map(c => (
-											<TableCell key={c.name}>{c.name}</TableCell>
+											<TableCell key={c.name}>
+
+												{c.name}
+												{c.name !== 'participant_id' && <IconButton
+													color='secondary'
+													aria-label='delete'
+													onClick={() =>
+														handleDeleteColumn(c.name)
+													}
+												>
+													<Delete />
+												</IconButton>}
+											</TableCell>
 										))}
+										<TableCell>
+											<CreateField
+												handleCreateField={handleCreateColumn}
+												creating={isCreatingField}
+											/>
+										</TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>
@@ -199,10 +224,21 @@ const Participants = ({
 										<TableRow
 											hover
 											role='checkbox'
-											onClick={() => setSelectedSubject(row.participant_id)}
 											key={row.participant_id}
 										>
-											{/* <TableCell padding='checkbox'>
+											<TableCell padding='checkbox'>
+												<IconButton
+													color='warning'
+													aria-label='delete'
+													size='small'
+													onClick={() =>
+														handleDeleteParticipant(row.participant_id)
+													}
+												>
+													<Delete />
+												</IconButton>
+											</TableCell>
+											<TableCell padding='checkbox'>
 												<IconButton
 													color='primary'
 													aria-label='edit'
@@ -212,7 +248,7 @@ const Participants = ({
 												>
 													<Edit />
 												</IconButton>
-											</TableCell> */}
+											</TableCell>
 											{Object.keys(row).map(key => (
 												<TableCell key={key}>{`${row[key]}`}</TableCell>
 											))}

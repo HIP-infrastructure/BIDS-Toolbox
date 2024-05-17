@@ -7,7 +7,6 @@ import * as Yup from 'yup'
 import { createBidsDataset } from '../../api/gatewayClientAPI'
 import { CreateBidsDatasetDto, IError } from '../../api/types'
 import { useNotification } from '../../hooks/useNotification'
-import { useAppStore } from '../../Store'
 
 const validationSchema = Yup.object().shape({
 	Name: Yup.string()

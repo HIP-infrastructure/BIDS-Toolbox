@@ -3,8 +3,6 @@ import {
 	BIDSDataset,
 	BIDSFile,
 	Participant,
-	User,
-	UserCredentials,
 } from './api/types'
 
 

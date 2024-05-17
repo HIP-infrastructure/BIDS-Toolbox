@@ -16,12 +16,9 @@ import React, { useEffect, useState } from 'react'
 import * as Yup from 'yup'
 import {
 	BIDSDataset,
-	EditSubjectClinicalDto,
 	Participant,
 } from '../../api/types'
 import { useNotification } from '../../hooks/useNotification'
-import { useAppStore } from '../../Store'
-// import { subEditClinical } from '../../api/gatewayClientAPI'
 
 type IField = Record<string, string>
 
@@ -34,12 +31,12 @@ const validationSchema = Yup.object().shape({
 const CreateParticipant = ({
 	dataset,
 	open,
-	handleClose,
+	handleCreateParticipant,
 	participantEditId,
 }: {
 	dataset?: BIDSDataset
 	open: boolean
-	handleClose: (participant?: Participant) => void
+	handleCreateParticipant: (participant?: Participant) => void
 	participantEditId?: string
 }) => {
 	const { showNotif } = useNotification()
@@ -69,7 +66,7 @@ const CreateParticipant = ({
 				setEditParticipant(participant)
 			}
 		}
-	}, [participantEditId, dataset])
+	}, [participantEditId, dataset, submitted])
 
 	const editMode = participantEditId !== undefined
 	const initialValues = editMode
@@ -88,7 +85,7 @@ const CreateParticipant = ({
 				<Typography variant='h6'>
 					{editMode ? 'Edit' : 'Create'} Participant
 				</Typography>
-				<IconButton onClick={() => handleClose()}>
+				<IconButton onClick={() => handleCreateParticipant()}>
 					<Close />
 				</IconButton>
 			</DialogTitle>
@@ -100,48 +97,20 @@ const CreateParticipant = ({
 					onSubmit={async (values, { resetForm }) => {
 						setSubmitted(true)
 
-						if (editMode) {
-							if (!dataset?.Name || !dataset?.Path) {
-								showNotif('Participant not saved', 'error')
-								return
-							}
-
-							const { participant_id, ...other } = values as any
-
-							const subEditClinicalDto: EditSubjectClinicalDto = {
-								owner: "",
-								dataset: dataset.Name,
-								path: dataset.Path,
-								subject: participant_id,
-								clinical: { ...other },
-							}
-
-							// subEditClinical(subEditClinicalDto)
-							// 	.then(() => {
-							// 		showNotif('Participant saved', 'success')
-							// 		resetForm()
-							// 		setSubmitted(false)
-							// 		handleClose(values)
-							// 	})
-							// 	.catch(() => {
-							// 		showNotif('Participant not saved', 'error')
-							// 		setSubmitted(false)
-							// 		handleClose()
-							// 	})
-						} else {
-
-							const { participant_id, ...other } = values as any
-
-							const participant = {
-								participant_id: `sub-${participant_id}`,
-								...other,
-							}
-
-							handleClose(participant)
-							showNotif('Participant created.', 'success')
-							resetForm()
-							setSubmitted(false)
+						if (!dataset?.Name || !dataset?.Path) {
+							showNotif('Participant not saved', 'error')
+							return
 						}
+
+						const { participant_id, ...other } = values as any
+						const participant = {
+							participant_id: (/^sub-/.test(participant_id) ? participant_id : "sub-" + participant_id),
+							...other,
+						}
+
+						handleCreateParticipant(participant)
+						resetForm()
+						setSubmitted(false)
 					}}
 				>
 					{({ errors, handleChange, touched, values, submitForm }) => (
@@ -162,7 +131,7 @@ const CreateParticipant = ({
 													label={field}
 													value={(values as IField)[field]}
 													onChange={handleChange}
-													InputProps={field === 'participant_id' && !editMode &&  {
+													InputProps={field === 'participant_id' && !editMode && {
 														startAdornment: <InputAdornment position="start">sub-</InputAdornment>,
 													} || {}}
 													error={
