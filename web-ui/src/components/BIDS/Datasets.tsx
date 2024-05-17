@@ -14,32 +14,33 @@ import {
 import React, { useCallback, useEffect, useState } from 'react'
 import { getAllBidsDataset } from '../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../api/types'
-import useDebounce from '../../hooks/useDebounce'
 import TitleBar from '../UI/titleBar'
 import CreateDataset from './CreateDataset'
 import DatasetCard from './DatasetCard'
+import { API_DOC_URL } from '../../constants'
 
-const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?: (dataset: BIDSDataset) => void, buttonTitle?: string }) => {
+const Datasets = () => {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [datasets, setDatasets] = useState<
 		{ data?: BIDSDataset[]; error?: string } | undefined
 	>()
 	const [loading, setLoading] = useState(false)
 
-	useEffect(() => {
-		setLoading(true)
+	const getBidsDatasets = useCallback(() => {
 		getAllBidsDataset().then((data) => {
 			setDatasets({ data: data })
 			setLoading(false)
 		})
-	}, [getAllBidsDataset])
+	}, [])
+
+	useEffect(() => {
+		setLoading(true)
+		getBidsDatasets()
+	}, [getBidsDatasets])
 
 	const handleDatasetCreated = () => {
 		setIsCreateDialogOpen(false)
-		getAllBidsDataset().then((data) => {
-			setDatasets({ data: data })
-			setLoading(false)
-		})
+		getBidsDatasets()
 	}
 
 	return (
@@ -84,6 +85,8 @@ const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?
 
 			<Box sx={{ mt: 2 }}>
 				{datasets?.error && <Alert severity='error'>{datasets?.error}</Alert>}
+				<Link onClick={() => window.open(API_DOC_URL)}>Swagger API</Link>
+
 				<Box sx={{ p: 2 }}>
 					{datasets?.data?.length === 0 && (
 						<Typography variant='body2'>No results</Typography>
@@ -106,22 +109,10 @@ const Datasets = ({ handleClickedDataset, buttonTitle }: { handleClickedDataset?
 						}}
 					>
 						{datasets?.data?.map(dataset => (
-							<DatasetCard key={dataset.Name} dataset={dataset}>
-								{handleClickedDataset && <Button
-									size='small'
-									onClick={async e => {
-										e.preventDefault()
-										// eslint-disable-next-line no-console
-										handleClickedDataset(dataset)
-									}}
-								>
-									{buttonTitle}
-								</Button>}
-							</DatasetCard>
+							<DatasetCard key={dataset.Name} dataset={dataset} refresh={getBidsDatasets}/>
 						))}
 					</Box>
 				</Box>
-				<Link onClick={() => window.open('http://127.0.0.1:5000/apidocs')}>Swagger API</Link>
 			</Box>
 		</>
 	)

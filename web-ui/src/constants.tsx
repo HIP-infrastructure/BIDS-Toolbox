@@ -4,6 +4,7 @@ export const ROUTE_PREFIX = '/'
 export const APP_MARGIN_TOP = 50
 export const DRAWER_WIDTH = 240
 export const POLLING = Number(process.env.REACT_APP_POLLING_INTERVAL) || 2
+export const API_DOC_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000/apidocs'
 
 export const linkStyle = {
 	textDecoration: 'underline',

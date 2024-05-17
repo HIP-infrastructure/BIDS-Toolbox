@@ -1,41 +1,70 @@
+import React from 'react'
+import { Delete } from '@mui/icons-material'
 import {
-	Button,
 	Card,
 	CardActions,
 	CardContent,
 	CardMedia,
+	IconButton,
 	Paper,
-	Typography,
+	Typography
 } from '@mui/material'
-import { NavLink, useParams } from 'react-router-dom'
+import { useRef } from 'react'
+import { NavLink } from 'react-router-dom'
+import { deleteBidsDataset } from '../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../api/types'
-import { linkStyle, ROUTE_PREFIX } from '../../constants'
-import DatasetInfo from './DatasetInfo'
-import * as React from 'react'
+import { useNotification } from '../../hooks/useNotification'
+import Modal, { ModalComponentHandle } from '../UI/Modal'
 import { nameToColor } from '../theme'
+import DatasetInfo from './DatasetInfo'
 
-const DatasetCard = ({ dataset, children }: { dataset: BIDSDataset, children?: JSX.Element }): JSX.Element => {
-	const params = useParams()
+const DatasetCard = ({ dataset, refresh }: { dataset: BIDSDataset, refresh: () => void }) => {
+	const modalRef = useRef<ModalComponentHandle>(null)
+	const { showNotif } = useNotification()
+
+	const handleDeleteDataset = async (id: string): Promise<void> => {
+		if (!modalRef.current) return
+		const reply = await modalRef.current.open(
+			'Delete dataset ?',
+			'Deleting a dataset will remove all associated experiments and results. Are you sure you want to delete this dataset?'
+		)
+
+		if (reply) {
+			deleteBidsDataset(id).then(() => {
+				showNotif('Deleted dataset', 'success')
+				refresh()
+			}).catch(() => {
+				showNotif('Could not delete dataset', 'error')
+			})
+		}
+	}
 
 	return (
 		<>
-			<NavLink
-				to={`${dataset?.Name}`}
-				style={{ textDecoration: 'none' }}
-			>
-				<Card elevation={3} component={Paper} sx={{ width: 320 }}>
+			<Modal ref={modalRef} />
+			<Card elevation={3} component={Paper} sx={{ width: 320 }}>
+				<NavLink
+					to={`${dataset?.Name}`}
+					style={{ textDecoration: 'none' }}
+				>
 					<CardMedia
 						sx={{
-							background: `linear-gradient(to top, ${nameToColor(
+							background: `linear-gradient(${nameToColor(
 								dataset.Name,
 								'33'
-							)}), url(/api/v1/public/media/2109057773_human__neural_pathway__consciousness__autistic_thinking__futuristic__neurons_and_dendrites__photo_realistic__picture_of_the_day.png) no-repeat top center`,
+							)})`
 						}}
 						component='img'
 						height='96'
 						alt=''
 					/>
+				</NavLink>
+				<NavLink
+					to={`${dataset?.Name}`}
+					style={{ textDecoration: 'none' }}
+				>
 					<CardContent>
+
 						<Typography variant='h6'>{dataset?.Name}</Typography>
 						<Typography variant='body2' color='text.secondary'>
 							id: {dataset?.Name}
@@ -50,11 +79,19 @@ const DatasetCard = ({ dataset, children }: { dataset: BIDSDataset, children?: J
 						</Typography>
 						<DatasetInfo dataset={dataset} />
 					</CardContent>
-					<CardActions sx={{ p: 2 }}>
-						{children}
-					</CardActions>
-				</Card>
-			</NavLink>
+				</NavLink>
+				<CardActions sx={{ p: 2 }}>
+					<IconButton
+						color='primary'
+						aria-label='delete'
+						onClick={() =>
+							handleDeleteDataset(dataset?.Name || '')
+						}
+					>
+						<Delete />
+					</IconButton>
+				</CardActions>
+			</Card>
 		</>
 	)
 }
