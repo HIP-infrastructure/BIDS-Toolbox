@@ -5,7 +5,7 @@ import { Form, Formik } from 'formik'
 import React, { useState } from 'react'
 import * as Yup from 'yup'
 import { createBidsDataset } from '../../api/gatewayClientAPI'
-import { BIDSDataset, CreateBidsDatasetDto, IError } from '../../api/types'
+import { BIDSDataset, IError } from '../../api/types'
 import { useNotification } from '../../hooks/useNotification'
 
 const validationSchema = Yup.object().shape({

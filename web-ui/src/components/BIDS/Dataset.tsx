@@ -9,13 +9,11 @@ import {
 	Tabs,
 	Typography,
 } from '@mui/material'
-// import marked from 'marked'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { fileContent as getFileContent } from '../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../api/types'
-import { useAppStore } from '../../Store'
 import CSV2Table from '../UI/CSV2Table'
 import FileBrowser from '../UI/FileBrowser'
 import TitleBar from '../UI/titleBar'
@@ -48,7 +46,7 @@ const Dataset = () => {
 
 	useEffect(() => {
 		if (!selectedFile) return
-		
+
 		getFileContent(selectedFile)
 			.then(data => {
 				if (selectedFile.endsWith('.md')) {
@@ -84,7 +82,7 @@ const Dataset = () => {
 
 	return (
 		<>
-			<TitleBar title={'BIDS Dataset' }/>
+			<TitleBar title={'BIDS Dataset'} />
 
 			<Box sx={{ mt: 2 }}>
 				<Box>

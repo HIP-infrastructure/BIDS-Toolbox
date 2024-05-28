@@ -1,6 +1,6 @@
 import {
 	BIDSDataset,
-	BIDSDatasetResponse, BIDSFile, CreateBidsDatasetDto,
+	BIDSDatasetResponse, BIDSFile,
 	IError, Node, Participant
 } from './types'
 
@@ -59,7 +59,7 @@ export const fileContent = async (path: string) =>
 
 
 export const getBidsDataset = async (name: string): Promise<BIDSDataset | undefined> => {
-	const url = `${API_GATEWAY}/datasets/${name}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(name)}`
 	return fetch(url, {
 		headers: {
 			'Content-Type': 'application/json'
@@ -99,7 +99,7 @@ export const editBidsDataset = async (
 	previousDatasetName: string,
 	CreateBidsDatasetDto: BIDSDataset
 ): Promise<BIDSDatasetResponse | IError> => {
-	const url = `${API_GATEWAY}/datasets/${encodeURI(previousDatasetName)}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(previousDatasetName)}`
 	return fetch(url, {
 		method: 'PUT',
 		headers: {
@@ -114,7 +114,7 @@ export const editBidsDataset = async (
 export const deleteBidsDataset = async (
 	name: string
 ): Promise<BIDSDatasetResponse | IError> => {
-	const url = `${API_GATEWAY}/datasets/${name}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(name)}`
 	return fetch(url, {
 		method: 'DELETE',
 		headers: {
@@ -126,7 +126,7 @@ export const deleteBidsDataset = async (
 }
 
 export const createParticipant = async (datasetName: string, participant: Participant) => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/participants`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/participants`
 	return fetch(url, {
 		method: 'POST',
 		headers: {
@@ -139,7 +139,7 @@ export const createParticipant = async (datasetName: string, participant: Partic
 }
 
 export const editParticipant = async (datasetName: string, participantName: string, participant: Participant) => {
-	const url = `${API_GATEWAY}/datasets/${encodeURI(datasetName)}/participants/${encodeURI(participantName)}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/participants/${encodeURIComponent(participantName)}`
 	return fetch(url, {
 		method: 'PUT',
 		headers: {
@@ -152,7 +152,7 @@ export const editParticipant = async (datasetName: string, participantName: stri
 }
 
 export const deleteParticipant = async (datasetName: string, participantId: string) => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/participants/${participantId}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/participants/${encodeURIComponent(participantId)}`
 	return fetch(url, {
 		method: 'DELETE',
 		headers: {
@@ -164,7 +164,7 @@ export const deleteParticipant = async (datasetName: string, participantId: stri
 }
 
 export const createNewParticipantColumn = async (datasetName: string, name: string) => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/participants/key`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/participants/key`
 	return fetch(url, {
 		method: 'POST',
 		headers: {
@@ -177,7 +177,7 @@ export const createNewParticipantColumn = async (datasetName: string, name: stri
 }	
 
 export const deleteParticipantColumn = async (datasetName: string, name: string) => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/participants/key/${name}`
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/participants/key/${encodeURIComponent(name)}`
 	return fetch(url, {
 		method: 'DELETE',
 		headers: {
@@ -192,7 +192,7 @@ export const getParticipants = async (
 	path: string,
 	userId: string
 ): Promise<Participant[]> => {
-	const url = `${API_GATEWAY}/tools/bids/participants?path=${path}&owner=${userId}`
+	const url = `${API_GATEWAY}/tools/bids/participants?path=${encodeURIComponent(path)}&owner=${encodeURIComponent(userId)}`
 	return fetch(url, {
 		headers: {},
 	})
@@ -204,8 +204,8 @@ export const getParticipants = async (
 export const importSubject = async (
 	datasetName: string,
 	files: BIDSFile[]
-): Promise<any> => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/files`
+): Promise<void> => {
+	const url = `${API_GATEWAY}/datasets/${encodeURIComponent(datasetName)}/files`
 	return fetch(url, {
 		method: 'POST',
 		headers: {

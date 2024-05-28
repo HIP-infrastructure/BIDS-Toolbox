@@ -1,4 +1,4 @@
-import { Box, CardActions, CardContent, Link, Typography } from '@mui/material'
+import { CardActions, CardContent, Typography } from '@mui/material'
 import { BIDSDataset } from '../../api/types'
 import * as React from 'react'
 

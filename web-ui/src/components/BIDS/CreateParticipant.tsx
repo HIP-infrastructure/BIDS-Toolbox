@@ -102,6 +102,7 @@ const CreateParticipant = ({
 							return
 						}
 
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						const { participant_id, ...other } = values as any
 						const participant = {
 							participant_id: (/^sub-/.test(participant_id) ? participant_id : "sub-" + participant_id),
@@ -131,18 +132,18 @@ const CreateParticipant = ({
 													label={field}
 													value={(values as IField)[field]}
 													onChange={handleChange}
-													InputProps={field === 'participant_id' && !editMode && {
+													InputProps={(field === 'participant_id' && !editMode && {
 														startAdornment: <InputAdornment position="start">sub-</InputAdornment>,
-													} || {}}
+													}) || {}}
 													error={
 														// eslint-disable-next-line @typescript-eslint/no-explicit-any
-														(touched as any)[field] && (errors as IField)[field]
+														((touched as any)[field] && (errors as IField)[field])
 															? true
 															: false
 													}
 													helperText={
 														// eslint-disable-next-line @typescript-eslint/no-explicit-any
-														(touched as any)[field] && (errors as IField)[field]
+														((touched as any)[field] && (errors as IField)[field])
 															? (errors as IField)[field]
 															: null
 													}
