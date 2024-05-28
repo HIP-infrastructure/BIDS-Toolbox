@@ -4,7 +4,7 @@ import { Grid, TextField } from '@mui/material'
 import { Form, Formik } from 'formik'
 import React, { useState } from 'react'
 import * as Yup from 'yup'
-import { createBidsDataset } from '../../api/gatewayClientAPI'
+import { editBidsDataset } from '../../api/gatewayClientAPI'
 import { BIDSDataset, CreateBidsDatasetDto, IError } from '../../api/types'
 import { useNotification } from '../../hooks/useNotification'
 
@@ -16,45 +16,34 @@ const validationSchema = Yup.object().shape({
 	BIDSVersion: Yup.string().required('BIDS Version is required'),
 })
 
-const initialValues = {
-	Name: '',
-	BIDSVersion: '1.7.0',
-	License: '',
-	Authors: '',
-	Acknowledgements: '',
-	HowToAcknowledge: '',
-	Funding: '',
-	ReferencesAndLinks: '',
-	DatasetDOI: '',
-}
-
 interface ICreateDataset {
+	dataset: BIDSDataset,
 	setDatasetCreated: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
+const EditDataset = ({ dataset, setDatasetCreated }: ICreateDataset) => {
 	const { showNotif } = useNotification()
 	const [submitted, setSubmitted] = useState(false)
+	const [previousDatasetName] = useState(dataset.Name)
 
 	return (
 		<Formik
-			initialValues={initialValues}
+			initialValues={dataset}
 			validationSchema={validationSchema}
 			onSubmit={async (values, { resetForm }) => {
 				setSubmitted(true)
-				const createBidsDatasetDto: BIDSDataset = {
-					Name: values.Name,
-					BIDSVersion: values.BIDSVersion,
-					License: values.License,
-					Authors: values.Authors.split(','),
-					Acknowledgements: values.Acknowledgements,
-					HowToAcknowledge: values.HowToAcknowledge,
-					Funding: values.Funding?.split(','),
-					ReferencesAndLinks: values.ReferencesAndLinks?.split(','),
-					DatasetDOI: values.DatasetDOI,
-
+				const bidsDataset: BIDSDataset = {
+						Name: values.Name,
+						BIDSVersion: values.BIDSVersion || '',
+						License: values.License || '',
+						Authors: (values?.Authors?.toLocaleString() || '').split(','),
+						Acknowledgements: values.Acknowledgements || '',
+						HowToAcknowledge: values.HowToAcknowledge || '',
+						Funding: (values.Funding?.toLocaleString() || '').split(','),
+						ReferencesAndLinks: (values.ReferencesAndLinks?.toLocaleString() || '').split(','),
+						DatasetDOI: values.DatasetDOI || ''
 				}
-				const cd = await createBidsDataset(createBidsDatasetDto)
+				const cd = await editBidsDataset(previousDatasetName, bidsDataset)
 
 				if ((cd as IError).statusCode) {
 					showNotif((cd as IError).message, 'error')
@@ -107,7 +96,7 @@ const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
 									helperText={
 										touched.BIDSVersion && errors.BIDSVersion
 											? errors.BIDSVersion
-											: `Latest BIDS version is ${initialValues.BIDSVersion}`
+											: `Latest BIDS version is ${dataset.BIDSVersion}`
 									}
 								/>
 							</Grid>
@@ -265,4 +254,4 @@ const CreateDataset = ({ setDatasetCreated }: ICreateDataset) => {
 	)
 }
 
-export default CreateDataset
+export default EditDataset

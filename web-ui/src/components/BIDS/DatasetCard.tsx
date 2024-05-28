@@ -1,10 +1,13 @@
-import React from 'react'
-import { Delete } from '@mui/icons-material'
+import React, { useState } from 'react'
+import { Close, Delete, Edit } from '@mui/icons-material'
 import {
 	Card,
 	CardActions,
 	CardContent,
 	CardMedia,
+	Dialog,
+	DialogContent,
+	DialogTitle,
 	IconButton,
 	Paper,
 	Typography
@@ -17,10 +20,12 @@ import { useNotification } from '../../hooks/useNotification'
 import Modal, { ModalComponentHandle } from '../UI/Modal'
 import { nameToColor } from '../theme'
 import DatasetInfo from './DatasetInfo'
+import EditDataset from './EditDataset'
 
 const DatasetCard = ({ dataset, refresh }: { dataset: BIDSDataset, refresh: () => void }) => {
 	const modalRef = useRef<ModalComponentHandle>(null)
 	const { showNotif } = useNotification()
+	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
 	const handleDeleteDataset = async (id: string): Promise<void> => {
 		if (!modalRef.current) return
@@ -39,9 +44,38 @@ const DatasetCard = ({ dataset, refresh }: { dataset: BIDSDataset, refresh: () =
 		}
 	}
 
+	const handleEditDataset = async (id: string): Promise<void> => {
+		setIsEditDialogOpen(true)
+	}
+
+	const handleDatasetEdited = () => {
+		setIsEditDialogOpen(false)
+		refresh()
+	}
+
 	return (
 		<>
 			<Modal ref={modalRef} />
+			<Dialog open={isEditDialogOpen} sx={{ minWidth: '360' }}>
+				<DialogTitle
+					sx={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+					}}
+				>
+					Edit BIDS Dataset
+					<IconButton
+						onClick={() => setIsEditDialogOpen(!isEditDialogOpen)}
+					>
+						<Close />
+					</IconButton>
+				</DialogTitle>
+				<DialogContent dividers>
+					<EditDataset dataset={dataset} setDatasetCreated={handleDatasetEdited} />
+				</DialogContent>
+			</Dialog>
+
 			<Card elevation={3} component={Paper} sx={{ width: 320 }}>
 				<NavLink
 					to={`${dataset?.Name}`}
@@ -81,6 +115,15 @@ const DatasetCard = ({ dataset, refresh }: { dataset: BIDSDataset, refresh: () =
 					</CardContent>
 				</NavLink>
 				<CardActions sx={{ p: 2 }}>
+					<IconButton
+						color='primary'
+						aria-label='edit'
+						onClick={() =>
+							handleEditDataset(dataset?.Name || '')
+						}
+					>
+						<Edit />
+					</IconButton>
 					<IconButton
 						color='primary'
 						aria-label='delete'

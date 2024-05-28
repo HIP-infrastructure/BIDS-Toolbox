@@ -34,6 +34,7 @@ const Participants = ({
 	const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false)
 	const [participantEditId, setParticipantEditId] = useState<string>()
 	const [isCreatingField, setIsCreatingColumn] = useState(false)
+	const [previousParticipantName, setPreviousParticipantName] = useState<string>('')
 
 	useEffect(() => {
 		if (dataset?.Participants) setRows(dataset.Participants)
@@ -95,7 +96,7 @@ const Participants = ({
 		}
 
 		if (participantEditId) {
-			editParticipant(dataset?.Name, participant).then(() => {
+			editParticipant(dataset?.Name, previousParticipantName, participant).then(() => {
 				getDataset().then(() => {
 					showNotif('Participant saved', 'success')
 					setIsParticipantDialogOpen(false)
@@ -135,7 +136,7 @@ const Participants = ({
 
 	const handleEditParticipant = (id: string) => {
 		setParticipantEditId(id)
-		setIsParticipantDialogOpen(true)
+		setPreviousParticipantName(id)
 	}
 
 	const columns = [

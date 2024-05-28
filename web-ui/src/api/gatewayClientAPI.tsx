@@ -81,11 +81,27 @@ export const getAllBidsDataset: () => Promise<BIDSDataset[] | undefined> = async
 }
 
 export const createBidsDataset = async (
-	CreateBidsDatasetDto: CreateBidsDatasetDto
+	bidsDataset: BIDSDataset
 ): Promise<BIDSDatasetResponse | IError> => {
 	const url = `${API_GATEWAY}/datasets`
 	return fetch(url, {
 		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(bidsDataset),
+	})
+		.then(checkForError)
+		.catch(catchError)
+}
+
+export const editBidsDataset = async (
+	previousDatasetName: string,
+	CreateBidsDatasetDto: BIDSDataset
+): Promise<BIDSDatasetResponse | IError> => {
+	const url = `${API_GATEWAY}/datasets/${encodeURI(previousDatasetName)}`
+	return fetch(url, {
+		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json'
 		},
@@ -122,8 +138,8 @@ export const createParticipant = async (datasetName: string, participant: Partic
 		.catch(catchError)
 }
 
-export const editParticipant = async (datasetName: string, participant: Participant) => {
-	const url = `${API_GATEWAY}/datasets/${datasetName}/participants`
+export const editParticipant = async (datasetName: string, participantName: string, participant: Participant) => {
+	const url = `${API_GATEWAY}/datasets/${encodeURI(datasetName)}/participants/${encodeURI(participantName)}`
 	return fetch(url, {
 		method: 'PUT',
 		headers: {
