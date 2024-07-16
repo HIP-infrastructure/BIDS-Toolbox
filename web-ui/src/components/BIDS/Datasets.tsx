@@ -1,4 +1,4 @@
-import { Add, Close } from '@mui/icons-material'
+import { Close } from '@mui/icons-material'
 import {
 	Alert,
 	Box,
@@ -11,7 +11,7 @@ import {
 	Link,
 	Typography,
 } from '@mui/material'
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { getAllBidsDataset, getContext, setContext } from '../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../api/types'
 import TitleBar from '../UI/titleBar'
