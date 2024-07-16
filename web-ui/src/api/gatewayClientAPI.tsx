@@ -33,6 +33,29 @@ const catchError = (error: unknown) => {
 	return Promise.reject(String(error))
 }
 
+export const setContext = async (path: string) => {
+	const url = `${API_GATEWAY}/context`
+	return fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ Path: path }),
+	})
+		.then(checkForError)
+		.catch(catchError)
+}	
+
+export const getContext = async () => {
+	const url = `${API_GATEWAY}/context`
+	return fetch(url, {
+		headers: {
+		},
+	})
+		.then(checkForError)
+		.catch(catchError)
+}
+
 export const getFiles2 = async (path: string): Promise<Node[]> =>
 	fetch(`${API_GATEWAY}/files?path=${encodeURIComponent(path)}`, {
 		headers: {
@@ -83,6 +106,7 @@ export const getAllBidsDataset: () => Promise<BIDSDataset[] | undefined> = async
 export const createBidsDataset = async (
 	bidsDataset: BIDSDataset
 ): Promise<BIDSDatasetResponse | IError> => {
+	
 	const url = `${API_GATEWAY}/datasets`
 	return fetch(url, {
 		method: 'POST',
