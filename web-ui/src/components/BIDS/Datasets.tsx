@@ -11,13 +11,14 @@ import {
 	Link,
 	Typography,
 } from '@mui/material'
-import React, { useCallback, useEffect, useState } from 'react'
-import { getAllBidsDataset } from '../../api/gatewayClientAPI'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
+import { getAllBidsDataset, getContext, setContext } from '../../api/gatewayClientAPI'
 import { BIDSDataset } from '../../api/types'
 import TitleBar from '../UI/titleBar'
 import CreateDataset from './CreateDataset'
 import DatasetCard from './DatasetCard'
 import { API_DOC_URL } from '../../constants'
+import FileChooser from '../UI/FileChooser'
 
 const Datasets = () => {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -25,13 +26,22 @@ const Datasets = () => {
 		{ data?: BIDSDataset[]; error?: string } | undefined
 	>()
 	const [loading, setLoading] = useState(false)
+	const [path, setPath] = useState<string | undefined>()
+	const [selectedFile, setSelectedFile] = useState<string>('/')
+	const [showBIDSPathDialog, setShowBIDSPathDialog] = useState(false)
+
+	useEffect(() => {
+		getContext().then(data => {
+			setPath(data)
+		})
+	}, [])
 
 	const getBidsDatasets = useCallback(() => {
 		getAllBidsDataset().then((data) => {
 			setDatasets({ data: data })
 			setLoading(false)
 		})
-	}, [])
+	}, [path])
 
 	useEffect(() => {
 		setLoading(true)
@@ -41,6 +51,13 @@ const Datasets = () => {
 	const handleDatasetCreated = () => {
 		setIsCreateDialogOpen(false)
 		getBidsDatasets()
+	}
+
+	const handleSetBIDSPath = () => {
+		setContext(selectedFile).then(data => {
+			setPath(data)
+			setShowBIDSPathDialog(!showBIDSPathDialog)
+		})
 	}
 
 	return (
@@ -66,14 +83,23 @@ const Datasets = () => {
 			</Dialog>
 
 			<TitleBar
-				title='BIDS Datasets'
+				title={`BIDS Datasets`}
+				description={`Path: ${path}`}
 				button={
 					<Box sx={{ display: 'flex' }}>
 						<Button
-							color='primary'
+							color='secondary'
 							size='small'
 							sx={{ m: 2 }}
-							startIcon={<Add />}
+							onClick={() => setShowBIDSPathDialog(!showBIDSPathDialog)}
+							variant={'contained'}
+						>
+							Set BIDS path
+						</Button>
+						<Button
+							color='secondary'
+							size='small'
+							sx={{ m: 2 }}
 							onClick={() => setIsCreateDialogOpen(true)}
 							variant={'contained'}
 						>
@@ -85,7 +111,6 @@ const Datasets = () => {
 
 			<Box sx={{ mt: 2 }}>
 				{datasets?.error && <Alert severity='error'>{datasets?.error}</Alert>}
-				<Link onClick={() => window.open(API_DOC_URL)}>Swagger API</Link>
 
 				<Box sx={{ p: 2 }}>
 					{datasets?.data?.length === 0 && (
@@ -109,10 +134,20 @@ const Datasets = () => {
 						}}
 					>
 						{datasets?.data?.map(dataset => (
-							<DatasetCard key={dataset.Name} dataset={dataset} refresh={getBidsDatasets}/>
+							<DatasetCard key={dataset.Name} dataset={dataset} refresh={getBidsDatasets} />
 						))}
 					</Box>
 				</Box>
+				{showBIDSPathDialog && <Box sx={{ display: 'flex', gap: 4, alignItems: 'start' }}>
+					<Box sx={{ flexGrow: 1 }}>
+						<FileChooser
+							handleSelectedFile={path => setSelectedFile(path)}
+						/>
+					</Box>
+					<Button onClick={handleSetBIDSPath}>Set path</Button>
+				</Box>
+				}
+				<Link onClick={() => window.open(API_DOC_URL)}>Swagger API</Link>
 			</Box>
 		</>
 	)
